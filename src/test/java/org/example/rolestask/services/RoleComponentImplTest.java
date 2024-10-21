@@ -4,48 +4,36 @@ import org.example.rolestask.entity.Role;
 import org.example.rolestask.web.model.request.RoleRequest;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.transaction.annotation.Transactional;
+import java.io.UnsupportedEncodingException;
 import java.util.OptionalLong;
 
 
 @SpringBootTest
 @ContextConfiguration
-@Transactional
 class RoleComponentImplTest {
     @Autowired
     private RoleComponent component;
     @Autowired
     private DataTestValues testValues;
-    static long id;
-
-    @BeforeEach
-    void setUp(){
-        RoleRequest request = new RoleRequest();
-        request.setName(testValues.testName);
-        request.setDescription(testValues.testDescription);
-
-        try {
-            Role role = component.commit(request);
-            id = role.getId();
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }
 
     @Test
     void notNull(){
         assertNotNull(testValues);
     }
     @Test
-    void findByIdOrDie() {
-        Role roleFromTable = component.findByIdOrDie(id);
+    void findByIdOrDie() throws UnsupportedEncodingException {
+        Role roleFromTable = component.findByIdOrDie(testValues.idFirst);
         assertNotNull(roleFromTable);
-        assertEquals(testValues.testName, roleFromTable.getName());
-        assertEquals(testValues.testDescription, roleFromTable.getDescription());
+        assertEquals(testValues.nameFirst, roleFromTable.getName());
+
+        try {
+        assertEquals(testValues.descriptionFirst, new String(roleFromTable.getDescription().getBytes("Cp1252"), "Cp1251"));
+        }catch(UnsupportedEncodingException e){
+            e.printStackTrace();
+        }
     }
 
     @Test
@@ -62,17 +50,39 @@ class RoleComponentImplTest {
 
     @Test
     void findAll() {
-        assertEquals(1, component.findAll().size());
+        assertEquals(2, component.findAll().size());
     }
 
     @Test
     void deleteRoleById() {
-        assertEquals(1, component.findAll().size());
+        long id =  getIdCommitedRole();
+        assertEquals(3, component.findAll().size());
         try{
             component.deleteRoleById(id);
         }catch(Exception e){
             e.printStackTrace();
         }
-        assertEquals(0, component.findAll().size());
+        assertEquals(2, component.findAll().size());
+    }
+
+    @Test
+    void updateUserById(){
+        long id =  getIdCommitedRole();
+
+        component.updateRoleById(id,new RoleRequest(testValues.testUpdateName,testValues.testUpdateDescription));
+        Role roleFromTable = component.findByIdOrDie(id);
+
+        assertNotNull(roleFromTable);
+        assertEquals(testValues.testUpdateName, roleFromTable.getName());
+        assertEquals(testValues.testUpdateDescription, roleFromTable.getDescription());
+        component.deleteRoleById(id);
+    }
+    private long getIdCommitedRole(){
+        try{
+            return component.commit(new RoleRequest(testValues.testName,testValues.testDescription )).getId();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return 0;
     }
 }

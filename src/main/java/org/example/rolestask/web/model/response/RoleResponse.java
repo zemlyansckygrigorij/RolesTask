@@ -18,6 +18,10 @@ import org.example.rolestask.entity.Role;
 @Getter
 @AllArgsConstructor
 public class RoleResponse {
+    @Schema(description = "Идентификатор роли")
+    @JsonProperty("id")
+    private long id;
+
     @Schema(description = "Имя роли")
     @JsonProperty("name")
     private String name;
@@ -27,6 +31,7 @@ public class RoleResponse {
     private String description;
 
     public RoleResponse(Role user) {
+        this.id = user.getId();
         this.name = user.getName();
         this.description = user.getDescription();
     }

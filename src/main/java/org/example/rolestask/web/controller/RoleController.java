@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Validated
 @Tag(name = "API работы с ролями",
         description = "Api work roles")
-@RequestMapping("/roles")
+@RequestMapping("/api/roles")
 @RequiredArgsConstructor
 public class RoleController {
     private final RoleComponent component;
